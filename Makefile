@@ -6,11 +6,12 @@ all: deps
 deps:
 	go get -u github.com/gorilla/pat
 
-dist-deps:
+.dist-deps:
 	go get -u github.com/mitchellh/gox
 	gox -build-toolchain
+	touch .dist-deps
 
-dist: dist-deps deps
+dist: .dist-deps deps
 	-rm -rf ./.dist-build
 	gox -osarch="linux/amd64" -output="build/ssbs/{{.Dir}}_{{.OS}}_{{.Arch}}" .
 	mkdir ./.dist-build
@@ -19,4 +20,4 @@ dist: dist-deps deps
 	mv ./.dist-build/ssbs.zip ssbs-$(VERSION).zip
 	rm -rf ./.dist-build
 
-.PHONY: all dist deps dist-deps
+.PHONY: all dist deps
