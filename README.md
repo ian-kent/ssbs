@@ -31,6 +31,11 @@ Build something:
 curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","build":[ ["make"], ["make","dist"] ], "artifacts": "ssbs-*.zip" }' http://localhost:5252/build
 ```
 
+Build something with environment variables:
+```bash
+curl -v -d '{"repo":"ian-kent/ssbs","env":{"GOPATH", ".."},"commit":"master","build":[ ["make"], ["make","dist"] ], "artifacts": "ssbs-*.zip" }' http://localhost:5252/build
+```
+
 Or build something using HTTPS:
 ```bash
 curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","build":[ ["make"], ["make","dist"] ], "artifacts": "ssbs-*.zip", "token": "-" }' http://localhost:5252/build

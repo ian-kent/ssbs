@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -52,6 +53,8 @@ type buildInput struct {
 	Publish [][]string `json:"publish"`
 	// GitHub token, causes git clone to use https
 	Token string `json:"token"`
+	// Environment variables to set
+	Env map[string]string `json:"env"`
 }
 type buildResponse struct {
 	// The result of each step
@@ -72,13 +75,19 @@ type buildOutput struct {
 	Stderr string `json:"stderr"`
 }
 
-func runCommand(workDir, cmd string, args ...string) (string, string, error) {
+func runCommand(workDir string, env map[string]string, cmd string, args ...string) (string, string, error) {
 	c := exec.Command(cmd, args...)
 	var out bytes.Buffer
 	var err bytes.Buffer
 	c.Stdout = &out
 	c.Stderr = &err
 	c.Dir = workDir
+	c.Env = os.Environ()
+	absWd, _ := filepath.Abs(workDir)
+	for k, v := range env {
+		v = strings.Replace(v, "$WORKDIR", absWd, -1)
+		c.Env = append(c.Env, k+"="+v)
+	}
 
 	cErr := c.Run()
 	if cErr != nil {
@@ -119,12 +128,12 @@ func build(w http.ResponseWriter, req *http.Request) {
 
 	if len(i.Token) > 0 {
 		if i.Token == "-" {
-			o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "https://github.com/"+i.Repo+".git", workDir)
+			o.Stdout, o.Stderr, o.Error = runCommand(".", i.Env, "git", "clone", "https://github.com/"+i.Repo+".git", workDir)
 		} else {
-			o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "https://"+i.Token+":x-oauth-basic@github.com/"+i.Repo+".git", workDir)
+			o.Stdout, o.Stderr, o.Error = runCommand(".", i.Env, "git", "clone", "https://"+i.Token+":x-oauth-basic@github.com/"+i.Repo+".git", workDir)
 		}
 	} else {
-		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
+		o.Stdout, o.Stderr, o.Error = runCommand(".", i.Env, "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
 	}
 	if o.Error != nil {
 		log.Printf("Error cloning repo %s: %s", i.Repo, o.Error)
@@ -141,7 +150,7 @@ func build(w http.ResponseWriter, req *http.Request) {
 	}
 	log.Printf("Cloned repo %s", i.Repo)
 
-	o.Stdout, o.Stderr, o.Error = runCommand(workDir, "git", "checkout", i.Commit)
+	o.Stdout, o.Stderr, o.Error = runCommand(workDir, i.Env, "git", "checkout", i.Commit)
 	if o.Error != nil {
 		log.Printf("Error checking out commit %s: %s", i.Commit, o.Error)
 		b, err := json.Marshal(&r)
@@ -159,7 +168,7 @@ func build(w http.ResponseWriter, req *http.Request) {
 	for _, step := range i.Build {
 		var o1 buildOutput
 		o1.Step = step
-		o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, step[0], step[1:]...)
+		o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, i.Env, step[0], step[1:]...)
 		r.Steps = append(r.Steps, o1)
 		if o1.Error != nil {
 			log.Printf("Error running build step %s for %s: %s", step, i.Repo, o1.Error)
@@ -177,7 +186,7 @@ func build(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if len(i.Artifacts) > 0 {
-		o.Stdout, o.Stderr, o.Error = runCommand(workDir, "find", ".", "-name", i.Artifacts)
+		o.Stdout, o.Stderr, o.Error = runCommand(workDir, i.Env, "find", ".", "-name", i.Artifacts)
 		if o.Error != nil {
 			log.Printf("Error finding artifacts: %s", o.Error)
 			r.Steps = append(r.Steps, o)
@@ -213,7 +222,7 @@ func build(w http.ResponseWriter, req *http.Request) {
 		for _, step := range i.Publish {
 			var o1 buildOutput
 			o1.Step = step
-			o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, step[0], step[1:]...)
+			o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, i.Env, step[0], step[1:]...)
 			r.Steps = append(r.Steps, o1)
 			if o1.Error != nil {
 				log.Printf("Error running publish step %s for %s: %s", step, i.Repo, o1.Error)
