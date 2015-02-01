@@ -225,26 +225,26 @@ func build(w http.ResponseWriter, req *http.Request) {
 					log.Printf("Added artifact %s (%d bytes)", art, len(b))
 				}
 			}
+		}
 
-			for _, step := range i.Publish {
-				var o1 buildOutput
-				o1.Step = step
-				o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, i.Env, step[0], step[1:]...)
-				r.Steps = append(r.Steps, o1)
-				if o1.Error != nil {
-					log.Printf("Error running publish step %s for %s: %s", step, i.Repo, o1.Error)
-					b, err := json.Marshal(&r)
-					if err != nil {
-						w.WriteHeader(500)
-						w.Write([]byte("Failed to marshal output"))
-						return
-					}
-					w.WriteHeader(200)
-					w.Write(b)
+		for _, step := range i.Publish {
+			var o1 buildOutput
+			o1.Step = step
+			o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, i.Env, step[0], step[1:]...)
+			r.Steps = append(r.Steps, o1)
+			if o1.Error != nil {
+				log.Printf("Error running publish step %s for %s: %s", step, i.Repo, o1.Error)
+				b, err := json.Marshal(&r)
+				if err != nil {
+					w.WriteHeader(500)
+					w.Write([]byte("Failed to marshal output"))
 					return
 				}
-				log.Printf("Publish step completed for %s", i.Repo)
+				w.WriteHeader(200)
+				w.Write(b)
+				return
 			}
+			log.Printf("Publish step completed for %s", i.Repo)
 		}
 
 		b, err = json.Marshal(&r)

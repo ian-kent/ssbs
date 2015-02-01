@@ -74,6 +74,15 @@ And get back the artifacts:
 }
 ```
 
+### Publishing artifacts
+
+You can publish artifacts using the publish step, for example to upload
+the build artifacts to an [imagestore](https://github.com/ian-kent/imagestore).
+
+```bash
+curl -v -d '{"repo":"ian-kent/ssbs","env":{"GOPATH":"$WORKDIR/gopath", "PATH":"$PATH:$WORKDIR/gopath/bin"},"commit":"master","build":[ ["make"], ["make","dist"] ], "publish": [ ["curl", "-X", "POST", "--data-binary", "@ssbs-1.0.6.zip", "http://localhost:5253/images/ssbs-1.0.6.zip"] ] }' http://localhost:5252/build
+```
+
 ### Using Marathon
 
 If you're using Mesos and Marathon, you can easily start ssbs:
