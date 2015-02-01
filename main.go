@@ -86,7 +86,7 @@ func runCommand(workDir string, env map[string]string, cmd string, args ...strin
 	absWd, _ := filepath.Abs(workDir)
 	for k, v := range env {
 		v = strings.Replace(v, "$WORKDIR", absWd, -1)
-		c.Env = append(c.Env, k+"="+v)
+		c.Env = append(c.Env, k+"="+os.ExpandEnv(v))
 	}
 
 	cErr := c.Run()
