@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -91,7 +92,11 @@ func build(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ts := fmt.Sprintf("%d", time.Now().Unix())
-	workDir := "./workdir/" + i.Repo + "-" + ts + "/" + i.Repo
+	dRn := strings.Replace(i.Repo, "/", "+", -1)
+	workParent := "./workdir/" + dRn + "-" + ts
+	workDir := workParent + "/" + i.Repo
+
+	defer cleanup(workParent)
 
 	r := &buildResponse{
 		Steps: make([]buildOutput, 0),
@@ -193,4 +198,11 @@ func build(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(200)
 	w.Write(b)
 	return
+}
+
+func cleanup(workParent string) {
+	err := os.RemoveAll(workParent)
+	if err != nil {
+		log.Printf("WARNING: Failed to remove workParent: %s", err)
+	}
 }
