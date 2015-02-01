@@ -20,7 +20,7 @@ ssbs
 
 Build something:
 ```
-curl -v -d '{"repo":"ian-kent/ssbs","commit":"develop","steps":[ ["make"], ["make","dist"] ], "output": "ssbs-*.zip" }' http://localhost:5252/build
+curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","steps":[ ["make"], ["make","dist"] ], "output": "ssbs-*.zip" }' http://localhost:5252/build
 ```
 
 And get back the artifacts:
