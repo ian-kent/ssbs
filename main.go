@@ -121,6 +121,9 @@ func build(w http.ResponseWriter, req *http.Request) {
 
 	wg.Add(1)
 	go func(w httptest.ResponseRecorder) {
+		defer func() {
+			wg.Done()
+		}()
 		ts := fmt.Sprintf("%d", time.Now().Unix())
 		dRn := strings.Replace(i.Repo, "/", "+", -1)
 		workParent := "./workdir/" + dRn + "-" + ts
