@@ -26,12 +26,17 @@ func main() {
 	log.Printf("Listening on %s", bindAddr)
 
 	p := pat.New()
+	p.Path("/healthcheck").Methods("GET").HandlerFunc(healthcheck)
 	p.Path("/build").Methods("POST").HandlerFunc(build)
 
 	err := http.ListenAndServe(bindAddr, p)
 	if err != nil {
 		log.Printf("Error binding to %s: %v", bindAddr, err)
 	}
+}
+
+func healthcheck(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(200)
 }
 
 type buildInput struct {
