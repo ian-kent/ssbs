@@ -93,7 +93,7 @@ Command:
 
 URI:
 
-`https://github.com/ian-kent/ssbs/releases/download/v1.0.5/ssbs-1.0.5_linux_amd64.zip`
+`https://github.com/ian-kent/ssbs/releases/download/v1.0.6/ssbs-1.0.6_linux_amd64.zip`
 
 ### Licence
 
