@@ -47,7 +47,7 @@ And get back the artifacts:
     }
   ],
   "artifacts": {
-    "ssbs-1.0.0.zip": "BASE64_ENCODED_DATA"
+    "ssbs-1.0.1.zip": "BASE64_ENCODED_DATA"
   }
 }
 ```
@@ -62,7 +62,7 @@ Command:
 
 URI:
 
-`https://github.com/ian-kent/ssbs/releases/download/v1.0.0/ssbs-1.0.0_linux_amd64.zip`
+`https://github.com/ian-kent/ssbs/releases/download/v1.0.1/ssbs-1.0.1_linux_amd64.zip`
 
 ### Licence
 
