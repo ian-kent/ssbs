@@ -118,7 +118,11 @@ func build(w http.ResponseWriter, req *http.Request) {
 	var o buildOutput
 
 	if len(i.Token) > 0 {
-		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "https://"+i.Token+":x-oauth-basic@github.com/"+i.Repo+".git", workDir)
+		if i.Token == "-" {
+			o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "https://github.com/"+i.Repo+".git", workDir)
+		} else {
+			o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "https://"+i.Token+":x-oauth-basic@github.com/"+i.Repo+".git", workDir)
+		}
 	} else {
 		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
 	}
