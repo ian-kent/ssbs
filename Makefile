@@ -1,9 +1,12 @@
 VERSION=1.0.0
 
-all:
+all: deps
 	go build .
 
-dist:
+deps:
+	go get -u github.com/gorilla/pat
+
+dist: deps
 	-rm -rf ./.dist-build
 	gox -osarch="linux/amd64" -output="build/ssbs/{{.Dir}}_{{.OS}}_{{.Arch}}" .
 	mkdir ./.dist-build
@@ -12,4 +15,4 @@ dist:
 	mv ./.dist-build/ssbs.zip ssbs-$(VERSION).zip
 	rm -rf ./.dist-build
 
-.PHONY: all dist
+.PHONY: all dist deps
