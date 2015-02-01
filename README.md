@@ -3,6 +3,8 @@ Super Simple Build Server  [![GoDoc](https://godoc.org/github.com/ian-kent/ssbs?
 
 An incredibly simple build server.
 
+**WARNING** Don't run this in the wild! ANY command can be passed as a step.
+
 Current features:
 - Build from GitHub using SSH (must work using `git clone` without passwords)
 - Build a specific branch, tag or commit
