@@ -80,7 +80,7 @@ You can publish artifacts using the publish step, for example to upload
 the build artifacts to an [imagestore](https://github.com/ian-kent/imagestore).
 
 ```bash
-curl -v -d '{"repo":"ian-kent/ssbs","env":{"GOPATH":"$WORKDIR/gopath", "PATH":"$PATH:$WORKDIR/gopath/bin"},"commit":"master","build":[ ["make"], ["make","dist"] ], "publish": [ ["curl", "-X", "POST", "--data-binary", "@ssbs-1.0.7.zip", "http://localhost:5253/images/ssbs-1.0.7.zip"] ] }' http://localhost:5252/build
+curl -v -d '{"repo":"ian-kent/ssbs","env":{"GOPATH":"$WORKDIR/gopath", "PATH":"$PATH:$WORKDIR/gopath/bin"},"commit":"master","build":[ ["make"], ["make","dist"] ], "publish": [ ["curl", "-X", "POST", "--data-binary", "@ssbs-1.0.8.zip", "http://localhost:5253/images/ssbs-1.0.8.zip"] ] }' http://localhost:5252/build
 ```
 
 ### Using Marathon
@@ -93,7 +93,7 @@ Command:
 
 URI:
 
-`https://github.com/ian-kent/ssbs/releases/download/v1.0.7/ssbs-1.0.7_linux_amd64.zip`
+`https://github.com/ian-kent/ssbs/releases/download/v1.0.8/ssbs-1.0.8_linux_amd64.zip`
 
 ### Licence
 
