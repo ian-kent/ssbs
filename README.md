@@ -52,6 +52,18 @@ And get back the artifacts:
 }
 ```
 
+### Using Marathon
+
+If you're using Mesos and Marathon, you can easily start ssbs:
+
+Command:
+
+`./ssbs -bind=:$PORT`
+
+URI:
+
+`https://github.com/ian-kent/ssbs/releases/download/v1.0.0/ssbs-1.0.0_linux_amd64.zip`
+
 ### Licence
 
 Copyright ©‎ 2015, Ian Kent (http://www.iankent.eu).
