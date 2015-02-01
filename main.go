@@ -123,13 +123,13 @@ func build(w http.ResponseWriter, req *http.Request) {
 			w.Write([]byte("Failed to create workParent: " + err.Error()))
 			return
 		}
-		err = ioutil.WriteFile(workParent+"/deploy_key", []byte(i.DeployKey), 0600)
+		err = ioutil.WriteFile(workParent+"/deploy_key", []byte("-----BEGIN RSA PRIVATE KEY-----\n"+i.DeployKey+"\n-----END RSA PRIVATE KEY-----\n"), 0600)
 		if err != nil {
 			w.WriteHeader(500)
 			w.Write([]byte("Failed to write deploy_key: " + err.Error()))
 			return
 		}
-		o.Stdout, o.Stderr, o.Error = runCommand(workParent, "ssh-agent", "bash", "-c", "ssh-add ./deploy_key; git clone git@github.com:"+i.Repo+".git'")
+		o.Stdout, o.Stderr, o.Error = runCommand(".", "ssh-agent", "bash", "-c", "ssh-add "+workParent+"/deploy_key; git clone git@github.com:"+i.Repo+".git "+workDir)
 	} else {
 		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
 	}
