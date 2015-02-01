@@ -37,6 +37,8 @@ func main() {
 type buildInput struct {
 	// The GitHub repo to build (e.g. ian-kent/ssbs)
 	Repo string `json:"repo"`
+	// The GitHub deploy key (will be used in place of default SSH key)
+	DeployKey string `json:"deploy_key"`
 	// The commit to build (e.g. 1ba8d6s or master)
 	Commit string `json:"commit"`
 	// A pattern to find artifacts (e.g. ssbs-*.zip)
@@ -108,7 +110,24 @@ func build(w http.ResponseWriter, req *http.Request) {
 	}
 	var o buildOutput
 
-	o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
+	if len(i.DeployKey) > 0 {
+		// setup deploy key
+		err := os.MkdirAll(workParent, 0770)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte("Failed to create workParent: " + err.Error()))
+			return
+		}
+		err = ioutil.WriteFile(workParent+"/deploy_key", []byte(i.DeployKey), 0600)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte("Failed to write deploy_key: " + err.Error()))
+			return
+		}
+		o.Stdout, o.Stderr, o.Error = runCommand(workParent, "ssh-agent", "bash", "-c", "ssh-add ./deploy_key; git clone git@github.com:"+i.Repo+".git'")
+	} else {
+		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
+	}
 	if o.Error != nil {
 		log.Printf("Error cloning repo %s: %s", i.Repo, o.Error)
 		r.Steps = append(r.Steps, o)
