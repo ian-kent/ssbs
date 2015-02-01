@@ -47,10 +47,22 @@ And get back the artifacts:
     }
   ],
   "artifacts": {
-    "ssbs-1.0.0.zip": "BASE64_ENCODED_DATA"
+    "ssbs-1.0.1.zip": "BASE64_ENCODED_DATA"
   }
 }
 ```
+
+### Using Marathon
+
+If you're using Mesos and Marathon, you can easily start ssbs:
+
+Command:
+
+`./ssbs -bind=:$PORT`
+
+URI:
+
+`https://github.com/ian-kent/ssbs/releases/download/v1.0.1/ssbs-1.0.1_linux_amd64.zip`
 
 ### Licence
 
