@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,6 +19,10 @@ import (
 
 func main() {
 	bindAddr := ":5252"
+
+	flag.StringVar(&bindAddr, "bind", bindAddr, "bind address, e.g. :5252")
+	flag.Parse()
+
 	log.Printf("Listening on %s", bindAddr)
 
 	p := pat.New()

@@ -9,17 +9,21 @@ Current features:
 - Specify custom build commands
 
 Install ssbs:
-```
+```bash
 go get github.com/ian-kent/ssbs
 ```
 
 Start the server:
-```
+```bash
+# Default port 5252
 ssbs
+
+# Custom interface/port
+ssbs -bind=:5353
 ```
 
 Build something:
-```
+```bash
 curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","steps":[ ["make"], ["make","dist"] ], "output": "ssbs-*.zip" }' http://localhost:5252/build
 ```
 
