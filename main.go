@@ -45,9 +45,13 @@ type buildInput struct {
 	// The commit to build (e.g. 1ba8d6s or master)
 	Commit string `json:"commit"`
 	// A pattern to find artifacts (e.g. ssbs-*.zip)
-	Output string `json:"output"`
-	// A list of steps to execute (e.g. [ ["make"], ["make", "dist"] ])
-	Steps [][]string `json:"steps"`
+	Artifacts string `json:"artifacts"`
+	// A list of build steps to execute (e.g. [ ["make"], ["make", "dist"] ])
+	Build [][]string `json:"build"`
+	// A list of publish steps to execute (e.g. [ ["make", "publish"] ])
+	Publish [][]string `json:"publish"`
+	// GitHub token, causes git clone to use https
+	Token string `json:"token"`
 }
 type buildResponse struct {
 	// The result of each step
@@ -113,7 +117,11 @@ func build(w http.ResponseWriter, req *http.Request) {
 	}
 	var o buildOutput
 
-	o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
+	if len(i.Token) > 0 {
+		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "https://"+i.Token+":x-oauth-basic@github.com/"+i.Repo+".git", workDir)
+	} else {
+		o.Stdout, o.Stderr, o.Error = runCommand(".", "git", "clone", "git@github.com:"+i.Repo+".git", workDir)
+	}
 	if o.Error != nil {
 		log.Printf("Error cloning repo %s: %s", i.Repo, o.Error)
 		r.Steps = append(r.Steps, o)
@@ -144,13 +152,13 @@ func build(w http.ResponseWriter, req *http.Request) {
 	}
 	log.Printf("Checked out %s\n", i.Commit)
 
-	for _, step := range i.Steps {
+	for _, step := range i.Build {
 		var o1 buildOutput
 		o1.Step = step
 		o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, step[0], step[1:]...)
 		r.Steps = append(r.Steps, o1)
 		if o1.Error != nil {
-			log.Printf("Error running step %s for %s: %s", step, i.Repo, o1.Error)
+			log.Printf("Error running build step %s for %s: %s", step, i.Repo, o1.Error)
 			b, err := json.Marshal(&r)
 			if err != nil {
 				w.WriteHeader(500)
@@ -161,11 +169,11 @@ func build(w http.ResponseWriter, req *http.Request) {
 			w.Write(b)
 			return
 		}
-		log.Printf("Step completed for %s", i.Repo)
+		log.Printf("Build step completed for %s", i.Repo)
 	}
 
-	if len(i.Output) > 0 {
-		o.Stdout, o.Stderr, o.Error = runCommand(workDir, "find", ".", "-name", i.Output)
+	if len(i.Artifacts) > 0 {
+		o.Stdout, o.Stderr, o.Error = runCommand(workDir, "find", ".", "-name", i.Artifacts)
 		if o.Error != nil {
 			log.Printf("Error finding artifacts: %s", o.Error)
 			r.Steps = append(r.Steps, o)
@@ -196,6 +204,26 @@ func build(w http.ResponseWriter, req *http.Request) {
 				r.Artifacts[art] = base64.StdEncoding.EncodeToString(b)
 				log.Printf("Added artifact %s (%d bytes)", art, len(b))
 			}
+		}
+
+		for _, step := range i.Publish {
+			var o1 buildOutput
+			o1.Step = step
+			o1.Stdout, o1.Stderr, o1.Error = runCommand(workDir, step[0], step[1:]...)
+			r.Steps = append(r.Steps, o1)
+			if o1.Error != nil {
+				log.Printf("Error running publish step %s for %s: %s", step, i.Repo, o1.Error)
+				b, err := json.Marshal(&r)
+				if err != nil {
+					w.WriteHeader(500)
+					w.Write([]byte("Failed to marshal output"))
+					return
+				}
+				w.WriteHeader(200)
+				w.Write(b)
+				return
+			}
+			log.Printf("Publish step completed for %s", i.Repo)
 		}
 	}
 

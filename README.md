@@ -6,9 +6,11 @@ An incredibly simple build server.
 **WARNING** Don't run this in the wild! ANY command can be passed as a step.
 
 Current features:
-- Build from GitHub using SSH (must work using `git clone` without passwords)
+- Build from GitHub (must work using `git clone` without passwords)
+  - Either pre-configure SSH
+  - Or use an OAuth token in the build request
 - Build a specific branch, tag or commit
-- Specify custom build commands
+- Specify custom build and publish steps
 
 Install ssbs:
 ```bash
@@ -26,13 +28,23 @@ ssbs -bind=:5353
 
 Build something:
 ```bash
-curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","steps":[ ["make"], ["make","dist"] ], "output": "ssbs-*.zip" }' http://localhost:5252/build
+curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","build":[ ["make"], ["make","dist"] ], "artifacts": "ssbs-*.zip" }' http://localhost:5252/build
+```
+
+Or build something with a GitHub token:
+```bash
+curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","build":[ ["make"], ["make","dist"] ], "artifacts": "ssbs-*.zip", "token": "YOUR-GITHUB-TOKEN" }' http://localhost:5252/build
+```
+
+Or build something with publish steps:
+```bash
+curl -v -d '{"repo":"ian-kent/ssbs","commit":"master","build":[ ["make"], ["make","dist"] ], "publish":[ ["echo", "hi"] ] "artifacts": "ssbs-*.zip" }' http://localhost:5252/build
 ```
 
 And get back the artifacts:
 ```json
 {
-  "steps": [
+  "build": [
     {
       "step": ["make"],
       "stdout": "",
